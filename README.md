@@ -4,12 +4,12 @@ This library aims to provide a easy way to setup a Discord webhook in order to r
 It takes advantage of both PawnPlus and pawn-requests plugins to do so.\
 This library can also be embedded into your gamemode (as a module) or ran as a side script in your open.mp server.
 
-# Requirements
+### Requirements
 [PawnPlus v.1.5.1](https://github.com/IS4Code/PawnPlus/releases/tag/v1.5.1)\
 [pawn-requests v0.10.0](https://github.com/Southclaws/pawn-requests/releases/tag/0.10.0)
 
 
-# Installation: As a side script
+### Installation: As a side script
 
 1. Remember to make sure you got both [PawnPlus v.1.5.1](https://github.com/IS4Code/PawnPlus/releases/tag/v1.5.1) and [pawn-requests v0.10.0](https://github.com/Southclaws/pawn-requests/releases/tag/0.10.0) includes and plugins in respective folders.
 
@@ -23,7 +23,7 @@ From here on you can actually write or modify your code and use the function to 
 8. Paste your Discord Webhook link inside `webhook.ini` (if you don't know how to create one, look [this guide](https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks)). Save the file.
 9. Run your server. It should instantly kick up and send some startup message into your discord channel.
 
-# Installation: As a main script module
+### Installation: As a main script module
 
 1. Remember to make sure you got both [PawnPlus v.1.5.1](https://github.com/IS4Code/PawnPlus/releases/tag/v1.5.1) and [pawn-requests v0.10.0](https://github.com/Southclaws/pawn-requests/releases/tag/0.10.0) includes and plugins in respective folders.
 2. Copy the `modules/` inside your main script folder. This will put the module folder inside your main script folder.
@@ -50,14 +50,16 @@ public OnGameModeExit(){
 7. Compile and run your server. It should instantly kick up and send some startup message into your discord channel.
 
 
-# Important
+## Important
 Currently you cannot actually use both filterscript and module versions, so you need to only choose between one of them, as both are pretty much identical implementations of the same code.\
 Ergo, do not include `<serverlog>` in your main script and then include the module, or viceversa. This will produce a compiler error.
 
-# Usage
+## Usage
 
-`serverLogRegister` will register your log line in the buffer. It will be sent as soon as the buffer fills up to its maximum (1900 characters, or 20 lines.)\
-`serverLogRegister(const info[], const module[] = "serverLog")`
+> `serverLogRegister` will register your log line in the buffer. It will be sent as soon as the buffer fills up to its maximum (1900 characters, or 20 lines.)\
+```c
+serverLogRegister(const info[], const module[] = "serverLog")
+```
 
 
 Example:
@@ -69,4 +71,28 @@ public OnPlayerConnect(playerid){
     format(logline, sizeof(logline), "%s joined the server.", name);
     serverLogRegister(logline, "player"); // "player" being the optional "module" name. Suitable for modular gamemodes.
     return 1;
-}```
+}
+```
+
+
+> `serverLogPush` will inmediatly \"push\" the current buffer to send and clear its content after doing it.
+
+```c
+public serverLogPush()
+```
+
+Example:
+```c
+public OnGameModeInit(){
+    discordInit(); //Try to connect to the discord webhook.
+    delay(1000);
+    serverLogInit();
+    //Load your thing here
+
+
+
+
+    SetTimer("serverLogPush", 300000, true); //Set a timer so the log forcefully sends a discord webhook message, after 5 minutes, regardless of line count or characters inserted.
+    return 1;
+}
+```

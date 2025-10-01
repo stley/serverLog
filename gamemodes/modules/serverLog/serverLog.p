@@ -25,10 +25,12 @@ forward serverLogExit();
 forward sL_discordSendMessage(ConstStringTag:message);
 forward sL_discordOnSendMessage(Requests:id, E_HTTP_STATUS:status, Node:node);
 forward sL_Register(const info[], const module[]);
+forward serverLogPush();
+forward sL_Push();
 #define DISCORD_RETRY_MS    300000 //The time in miliseconds the plugin waits before trying to reconnect to the webhook.
 
 stock serverLogRegister(const info[], const module[] = "serverLog") return sL_Register(info, module);
-
+public serverLogPush() return sL_Push();
 
 new
     String:sL_Buffer,
@@ -91,6 +93,17 @@ public discordInit(){
         sL_discordSendMessage(str_format("**[%02d/%02d/%04d %02d:%02d:%02d]** - Connected to Discord webhook.", day, month, year, hour, minute, second));
         sL_Buffer = str_new("");
         str_acquire(sL_Buffer);
+    }
+    return 1;
+}
+
+public sL_Push(){
+    if(str_valid(sL_Buffer)){
+        if(str_len(sL_Buffer) && isRClientOnline){
+            sL_discordSendMessage(sL_Buffer);
+            str_clear(sL_Buffer);
+            sL_BufferLines = 0;
+        }
     }
     return 1;
 }

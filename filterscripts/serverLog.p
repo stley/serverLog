@@ -20,6 +20,7 @@ forward serverLogExit();
 forward sL_discordSendMessage(ConstStringTag:message);
 forward sL_discordOnSendMessage(Requests:id, E_HTTP_STATUS:status, Node:node);
 forward sL_Register(const info[], const module[]);
+forward sL_Push();
 
 #define DISCORD_RETRY_MS    300000 //The time in miliseconds the plugin waits before trying to reconnect to the webhook.
 
@@ -55,6 +56,17 @@ discordTimeOut(){
     if(IsValidTimer(RetryTimer)) return 1;
     else SetTimer("discordInit", DISCORD_RETRY_MS, false);
     return 1;    
+}
+
+public sL_Push(){
+    if(str_valid(sL_Buffer)){
+        if(str_len(sL_Buffer) && isRClientOnline){
+            sL_discordSendMessage(sL_Buffer);
+            str_clear(sL_Buffer);
+            sL_BufferLines = 0;
+        }
+    }
+    return 1;
 }
 
 public discordInit(){
