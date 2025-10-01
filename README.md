@@ -1,8 +1,13 @@
 # serverLog
 
-This library aims to provide a easy way to setup a Discord webhook in order to register logs of relevant information regarding your open.mp gamemode.
-It takes advantage of both PawnPlus and pawn-requests plugins to do so.
+This library aims to provide a easy way to setup a Discord webhook in order to register logs of relevant information regarding your open.mp gamemode.\
+It takes advantage of both PawnPlus and pawn-requests plugins to do so.\
 This library can also be embedded into your gamemode (as a module) or ran as a side script in your open.mp server.
+
+# Requirements
+[PawnPlus v.1.5.1](https://github.com/IS4Code/PawnPlus/releases/tag/v1.5.1)\
+[pawn-requests v0.10.0](https://github.com/Southclaws/pawn-requests/releases/tag/0.10.0)
+
 
 # Installation: As a side script
 
@@ -15,13 +20,13 @@ From here on you can actually write or modify your code and use the function to 
 5. Compile the filterscript `serverLog.p` as retrieved.
 6. At your server's `config.json`, add `filterscripts/serverLog` as a `side_script`.
 7. Inside `scriptfiles` folder, create a new file `webhook.ini`
-8. Paste your Discord Webhook link (if you don't know how to create one, look [this guide](https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks)). Save the file.
+8. Paste your Discord Webhook link inside `webhook.ini` (if you don't know how to create one, look [this guide](https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks)). Save the file.
 9. Run your server. It should instantly kick up and send some startup message into your discord channel.
 
 # Installation: As a main script module
 
 1. Remember to make sure you got both [PawnPlus v.1.5.1](https://github.com/IS4Code/PawnPlus/releases/tag/v1.5.1) and [pawn-requests v0.10.0](https://github.com/Southclaws/pawn-requests/releases/tag/0.10.0) includes and plugins in respective folders.
-2. Copy the contents of `gamemodes/` inside your main script. This will put the module folder inside your main script folder.
+2. Copy the `modules/` inside your main script folder. This will put the module folder inside your main script folder.
 3. Edit your main script, add `#include "modules/serverLog/serverLog.p"`. From here on you can use the library functions to log your info.
 4. Make sure to call `discordInit()`, `discordExit()`, `serverLogInit()` and `serverLogExit()` in your main `OnGameModeInit()` and `OnGameModeExit()` script.\
 Example:
@@ -40,7 +45,9 @@ public OnGameModeExit(){
     discordExit();
 }
 ```
-5. Compile and run your server. It should instantly kick up and send some startup message into your discord channel.
+5. Inside `scriptfiles` folder, create a new file: `webhook.ini`
+6. Paste your Discord Webhook link inside `webhook.ini` (if you don't know how to create one, look [this guide](https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks)). Save the file.
+7. Compile and run your server. It should instantly kick up and send some startup message into your discord channel.
 
 
 # Important
@@ -49,7 +56,9 @@ Ergo, do not include `<serverlog>` in your main script and then include the modu
 
 # Usage
 
-`serverLogRegister` will register your log line in the buffer. It will be sent as soon as the buffer fills up to its maximum (1900 characters, or 20 lines.)
+`serverLogRegister` will register your log line in the buffer. It will be sent as soon as the buffer fills up to its maximum (1900 characters, or 20 lines.)\
+`serverLogRegister(const info[], const module[] = "serverLog")`
+
 
 Example:
 ```c
@@ -60,5 +69,4 @@ public OnPlayerConnect(playerid){
     format(logline, sizeof(logline), "%s joined the server.", name);
     serverLogRegister(logline, "player"); // "player" being the optional "module" name. Suitable for modular gamemodes.
     return 1;
-}
-```
+}```

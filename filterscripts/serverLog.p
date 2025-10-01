@@ -174,7 +174,6 @@ public sL_Register(const info[], const module[])
     getdate(year, month, day);
     gettime(hour, minute, second);
     
-
     new String:logline = str_cat(
         str_format("**[%02d/%02d/%04d %02d:%02d:%02d]** - [***%s***] ", day, month, year, hour, minute, second, module),
         str_new(info)

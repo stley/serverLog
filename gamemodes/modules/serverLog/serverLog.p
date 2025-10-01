@@ -27,7 +27,7 @@ forward sL_discordOnSendMessage(Requests:id, E_HTTP_STATUS:status, Node:node);
 forward sL_Register(const info[], const module[]);
 #define DISCORD_RETRY_MS    300000 //The time in miliseconds the plugin waits before trying to reconnect to the webhook.
 
-stock serverLogRegister(const info[], const module[] = "undefined") return sL_Register(info, module);
+stock serverLogRegister(const info[], const module[] = "serverLog") return sL_Register(info, module);
 
 
 new
