@@ -1,8 +1,11 @@
+
 #if defined __serverLog_included
     #endinput
 #endif
-#define __serverLog_included
 
+#if defined __serverLog_as_a_module
+    #error "Do not include <serverLog>, as it collapses with serverLog module definitions!"
+#endif
 
 serverLogRegister(const info[], const module[] = "undefined"){
     if(funcidx("sL_Register"))
