@@ -2,7 +2,7 @@
 
 This library aims to provide a easy way to setup a Discord webhook in order to register logs of relevant information regarding your open.mp gamemode.\
 It takes advantage of both PawnPlus and pawn-requests plugins to do so.\
-This library can also be embedded into your gamemode (as a module) or ran as a side script in your open.mp server.
+Also, this library can be either embedded into your gamemode (as a module) or ran as a side script in your open.mp server.
 
 ### Requirements
 [PawnPlus v.1.5.1](https://github.com/IS4Code/PawnPlus/releases/tag/v1.5.1)\
@@ -75,7 +75,7 @@ public OnPlayerConnect(playerid){
 ```
 
 
-> `serverLogPush` will inmediatly \"push\" the current buffer to send and clear its content after doing it.
+> `serverLogPush` will immediately \"push\" the current buffer to send and clear its content after doing it.
 
 ```c
 public serverLogPush()
