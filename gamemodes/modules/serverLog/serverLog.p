@@ -142,8 +142,9 @@ sLM_serverLogInit(){
     ;
     getdate(year, month, day);
     gettime(hour, minute, second);
-    sLM_discordSendMessage(str_format("**[%02d/%02d/%04d %02d:%02d:%02d]** - ***stley/serverLog*** module started!", day, month, year, hour, minute, second));
-    print("stley/serverLog module started.");
+
+    sLM_discordSendMessage(str_format("**[%02d/%02d/%04d %02d:%02d:%02d]** - ***stley/serverLog*** module started!", day, month, year, hour, minute, second));  
+    print("\n\nstley/serverLog module started.\n\n");
     return 1;
 }
 sLM_serverLogExit(){
@@ -163,7 +164,7 @@ sLM_serverLogExit(){
         gettime(hour, minute, second);
         sLM_discordSendMessage(str_format("**[%02d/%02d/%04d %02d:%02d:%02d]** - ***stley/serverLog*** module stopping...", day, month, year, hour, minute, second));
     }
-    print("stley/serverLog module stopping.");
+    print("\n\nstley/serverLog module stopping.\n\n");
     return 1;
 }
 

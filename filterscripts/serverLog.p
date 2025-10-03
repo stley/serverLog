@@ -134,7 +134,7 @@ slFS_serverLogInit(){
     getdate(year, month, day);
     gettime(hour, minute, second);
     sLFS_discordSendMessage(str_format("**[%02d/%02d/%04d %02d:%02d:%02d]** - ***stley/serverLog*** side script started!", day, month, year, hour, minute, second));
-    print("stley/serverLog side script started.");
+    print("\n\nstley/serverLog side script started.\n\n");
     return 1;
 }
 slFS_serverLogExit(){
@@ -154,7 +154,7 @@ slFS_serverLogExit(){
         gettime(hour, minute, second);
         sLFS_discordSendMessage(str_format("**[%02d/%02d/%04d %02d:%02d:%02d]** - ***stley/serverLog*** side script stopping...", day, month, year, hour, minute, second));
     }
-    print("stley/serverLog side script stopping.");
+    print("\n\nstley/serverLog side script stopping.\n\n");
     return 1;
 }
 

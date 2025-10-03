@@ -28,21 +28,17 @@ From here on you can actually write or modify your code and use the function to 
 1. Remember to make sure you got both [PawnPlus v.1.5.1](https://github.com/IS4Code/PawnPlus/releases/tag/v1.5.1) and [pawn-requests v0.10.0](https://github.com/Southclaws/pawn-requests/releases/tag/0.10.0) includes and plugins in respective folders.
 2. Copy the `modules/` inside your main script folder. This will put the module folder inside your main script folder.
 3. Edit your main script, add `#include "modules/serverLog/serverLog.p"`. From here on you can use the library functions to log your info.
-4. Make sure to call `discordInit()`, `discordExit()`, `serverLogInit()` and `serverLogExit()` in your main `OnGameModeInit()` and `OnGameModeExit()` script.\
+4. Make sure to call `sLM_Init()` and `sLM_Exit()`, in your main `OnGameModeInit()` and `OnGameModeExit()` script.\
 Example:
 ```c
 public OnGameModeInit(){
-    discordInit(); //Try to connect to the discord webhook.
-    delay(1000);
-    serverLogInit();
+    sLM_Init();
     //Keep loading your thing from now on.
 }
 
 public OnGameModeExit(){
     //Unload your thing here, not after stopping serverLog!
-    serverLogExit();
-    delay(1000);
-    discordExit();
+    sLM_Exit();
 }
 ```
 5. Inside `scriptfiles` folder, create a new file: `webhook.ini`

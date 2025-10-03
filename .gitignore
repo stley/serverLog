@@ -15,3 +15,4 @@ config.json
 /plugins
 scriptfiles/webhook.ini
 
+log.txt
