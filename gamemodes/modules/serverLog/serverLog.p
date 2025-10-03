@@ -18,32 +18,31 @@
 
 native Node:JsonString_s(ConstAmxString:value) = JsonString; //PawnPlus implementation of pawn-requests native, supporting PP strings.
 
-forward discordInit();
-forward discordExit();
-forward serverLogInit();
-forward serverLogExit();
-forward sL_discordSendMessage(ConstStringTag:message);
-forward sL_discordOnSendMessage(Requests:id, E_HTTP_STATUS:status, Node:node);
-forward sL_Register(const info[], const module[]);
-forward serverLogPush();
-forward sL_Push();
+forward sLM_discordInit();
+forward sLM_discordExit();
+forward sLM_serverLogInit();
+forward sLM_serverLogExit();
+forward sLM_discordSendMessage(ConstStringTag:message);
+forward sLM_discordOnSendMessage(Requests:id, E_HTTP_STATUS:status, Node:node);
+forward sLM_Register(const info[], const module[]);
+forward sLM_Push();
+forward sLM_Send(const info[], const module[]);
 #define DISCORD_RETRY_MS    300000 //The time in miliseconds the plugin waits before trying to reconnect to the webhook.
 
-stock serverLogRegister(const info[], const module[] = "serverLog") return sL_Register(info, module);
-public serverLogPush() return sL_Push();
+
 
 new
-    String:sL_Buffer,
-    sL_BufferLines,
-    RequestsClient:sL_client,
-    webhook_url[256],
-    bool:isRClientOnline = true,
-    RetryTimer
+    String:sLM_Buffer,
+    sLM_BufferLines,
+    RequestsClient:sLM_client,
+    sLM_webhook_url[256],
+    bool:sLM_isRClientOnline = true,
+    sLM_RetryTimer
 ;
 
 
 webhookLinux(url[]){
-    //forcefully fix CRLF on webhook.ini file (for Linux servers)
+    //Fix CRLF on webhook.ini file (for Linux servers)
     while (strlen(url) > 0)
     {
         new last = url[strlen(url) - 1];
@@ -56,132 +55,125 @@ webhookLinux(url[]){
 }
 
 
-discordTimeOut(){
-    if(IsValidTimer(RetryTimer)) return 1;
-    else SetTimer("discordInit", DISCORD_RETRY_MS, false);
+
+
+sLM_discordTimeOut(){
+    if(IsValidTimer(sLM_RetryTimer)) return 1;
+    else SetTimer("sLM_discordInit", DISCORD_RETRY_MS, false);
     return 1;    
 }
 
-public discordInit(){
+public sLM_discordInit(){
     new File:filehandle = fopen("webhook.ini", io_read);
     if(filehandle){
-        fread(filehandle, webhook_url);
+        fread(filehandle, sLM_webhook_url);
         fclose(filehandle);
     }
     else{
         printf("\"webhook.ini\" not found on scriptfiles folder!");
         print("Could not connect to Discord webhook. Will retry in 5 minutes.");
-        isRClientOnline = false;
-        discordTimeOut();
+        sLM_isRClientOnline = false;
+        sLM_discordTimeOut();
         return 1;
     }
-    webhookLinux(webhook_url);
-    sL_client = RequestsClient(webhook_url);
+    webhookLinux(sLM_webhook_url);
+    sLM_client = RequestsClient(sLM_webhook_url);
     new
         hour, minute, second,
         day, month, year
     ;
     getdate(year, month, day);
     gettime(hour, minute, second);
-    if(!IsValidRequestsClient(sL_client)){
+    if(!IsValidRequestsClient(sLM_client)){
         print("Could not connect to Discord webhook. Will retry in 5 minutes.");
-        isRClientOnline = false;
-        discordTimeOut();
+        sLM_isRClientOnline = false;
+        sLM_discordTimeOut();
     }
     else{
-        isRClientOnline = true;
-        sL_discordSendMessage(str_format("**[%02d/%02d/%04d %02d:%02d:%02d]** - Connected to Discord webhook.", day, month, year, hour, minute, second));
-        sL_Buffer = str_new("");
-        str_acquire(sL_Buffer);
+        sLM_isRClientOnline = true;
+        sLM_discordSendMessage(str_format("**[%02d/%02d/%04d %02d:%02d:%02d]** - Connected to Discord webhook.", day, month, year, hour, minute, second));
+        sLM_Buffer = str_new("");
+        str_acquire(sLM_Buffer);
     }
     return 1;
 }
 
-public sL_Push(){
-    if(str_valid(sL_Buffer)){
-        if(str_len(sL_Buffer) && isRClientOnline){
-            sL_discordSendMessage(sL_Buffer);
-            str_clear(sL_Buffer);
-            sL_BufferLines = 0;
-        }
-    }
-    return 1;
-}
 
-public discordExit(){
+
+public sLM_discordExit(){
     new
         hour, minute, second,
         day, month, year
     ;
     getdate(year, month, day);
     gettime(hour, minute, second);
-    sL_discordSendMessage(str_format("**[%02d/%02d/%04d %02d:%02d:%02d]** - Shutting down server...", day, month, year, hour, minute, second));
+    sLM_discordSendMessage(str_format("**[%02d/%02d/%04d %02d:%02d:%02d]** - Shutting down server...", day, month, year, hour, minute, second));
     return 1;
 }
 
-stock sL_discordSendMessage(ConstStringTag:message){
-    if(!isRClientOnline) return 1;
-    if(IsValidRequestsClient(sL_client))
-    RequestJSON(sL_client,
+sLM_discordSendMessage(ConstStringTag:message){
+    if(!sLM_isRClientOnline) return 1;
+    if(IsValidRequestsClient(sLM_client))
+    RequestJSON(sLM_client,
         "",
         HTTP_METHOD_POST,
-        "sL_discordOnSendMessage",
+        "sLM_discordOnSendMessage",
         JsonObject("content", JsonString_s(message))
     );
     return 1;
 }
 
-public sL_discordOnSendMessage(Requests:id, E_HTTP_STATUS:status, Node:node){
+public sLM_discordOnSendMessage(Requests:id, E_HTTP_STATUS:status, Node:node){
     if(status == HTTP_STATUS_NO_CONTENT)
         return 1;
     else{
-        isRClientOnline = false;
-        sL_Register("Could not send the message to the Discord webhook. Retrying connection in 5 minutes.", "sL-Discord");
-        discordTimeOut();
+        sLM_isRClientOnline = false;
+        sLM_Register("Could not send the message to the Discord webhook. Retrying connection in 5 minutes.", "sLM-Discord");
+        sLM_discordTimeOut();
     }
     return 1;
 }
 
 
-public serverLogInit(){
+sLM_serverLogInit(){
     new
         hour, minute, second,
         day, month, year
     ;
     getdate(year, month, day);
     gettime(hour, minute, second);
-    sL_discordSendMessage(str_format("**[%02d/%02d/%04d %02d:%02d:%02d]** - ***stley/serverLog*** started!", day, month, year, hour, minute, second));
-    print("stley/serverLog started.");
+    sLM_discordSendMessage(str_format("**[%02d/%02d/%04d %02d:%02d:%02d]** - ***stley/serverLog*** module started!", day, month, year, hour, minute, second));
+    print("stley/serverLog module started.");
     return 1;
 }
-public serverLogExit(){
-    if(str_valid(sL_Buffer)){
-        if(str_len(sL_Buffer) && isRClientOnline){
-            sL_discordSendMessage(sL_Buffer);
+sLM_serverLogExit(){
+    if(str_valid(sLM_Buffer)){
+        if(str_len(sLM_Buffer) && sLM_isRClientOnline){
+            sLM_discordSendMessage(sLM_Buffer);
         }
-        str_release(sL_Buffer);
+        str_release(sLM_Buffer);
     }
     delay(500);
-    if(isRClientOnline){
+    if(sLM_isRClientOnline){
         new
         hour, minute, second,
         day, month, year
         ;
         getdate(year, month, day);
         gettime(hour, minute, second);
-        sL_discordSendMessage(str_format("**[%02d/%02d/%04d %02d:%02d:%02d]** - ***stley/serverLog*** stopping...", day, month, year, hour, minute, second));
+        sLM_discordSendMessage(str_format("**[%02d/%02d/%04d %02d:%02d:%02d]** - ***stley/serverLog*** module stopping...", day, month, year, hour, minute, second));
     }
-    print("stley/serverLog stopping.");
+    print("stley/serverLog module stopping.");
     return 1;
 }
 
 
-sL_Register(const info[], const module[])
+sLM_Register(const info[], const module[])
 {
-    if(!isRClientOnline) return printf("[%s] - %s", module, info);
-    if(!str_valid(sL_Buffer)){
-        sL_Buffer = str_new("");
-        str_acquire(sL_Buffer);
+    if(!sLM_isRClientOnline) return printf("[%s] - %s", module, info);
+    if(!str_valid(sLM_Buffer)){
+        sLM_Buffer = str_new("");
+        str_acquire(sLM_Buffer);
     }
     const MAX_LINES = 20;
 
@@ -190,21 +182,69 @@ sL_Register(const info[], const module[])
     getdate(year, month, day);
     gettime(hour, minute, second);
     
-
-    new String:logline = str_cat(
-        str_format("**[%02d/%02d/%04d %02d:%02d:%02d]** - [***%s***] ", day, month, year, hour, minute, second, module),
-        str_new(info)
-    );
-    if (sL_BufferLines >= MAX_LINES || (str_len(sL_Buffer)+str_len(logline)) > 1900)
+    #if defined serverLog_NO_MODULES
+        new String:logline = str_cat(
+            str_format("**[%02d/%02d/%04d %02d:%02d:%02d]** - ", day, month, year, hour, minute, second),
+            str_new(info)
+        );  
+    #else  
+        new String:logline = str_cat(
+            str_format("**[%02d/%02d/%04d %02d:%02d:%02d]** - [***%s***] ", day, month, year, hour, minute, second, module),
+            str_new(info)
+        );
+    #endif
+    if (sLM_BufferLines >= MAX_LINES || (str_len(sLM_Buffer)+str_len(logline)) > 1900)
     {
-        sL_discordSendMessage(sL_Buffer);
-        str_clear(sL_Buffer);
-        sL_BufferLines = 0;
+        sLM_discordSendMessage(sLM_Buffer);
+        str_clear(sLM_Buffer);
+        sLM_BufferLines = 0;
     }
-    if (sL_BufferLines > 0) str_append_format(sL_Buffer, "\n");
-    str_append(sL_Buffer, str_convert(logline, "ansi", "utf8"));
-    sL_BufferLines++;
+    if (sLM_BufferLines > 0) str_append_format(sLM_Buffer, "\n");
+    str_append(sLM_Buffer, str_convert(logline, "ansi", "utf8"));
+    sLM_BufferLines++;
     printf("[%s] - %s", module, info);
     return 1;
 }
 
+public sLM_Push(){
+    if(str_valid(sLM_Buffer)){
+        if(str_len(sLM_Buffer) && sLM_isRClientOnline){
+            sLM_discordSendMessage(sLM_Buffer);
+            str_clear(sLM_Buffer);
+            sLM_BufferLines = 0;
+        }
+    }
+    return 1;
+}
+
+
+stock sLM_Send(const info[], const module[]){
+    sLM_Register(info, module); // If lines or character length exceed limits, it pushes the buffer automatically, then starts adding a new line.
+    if(sLM_BufferLines) sLM_Push(); // Pushes the current buffer.
+    return 1;
+}
+
+
+sLM_Init(){
+    sLM_discordInit();
+    delay(500);
+    sLM_serverLogInit();
+    if(CallRemoteFunction("sLFS_Ping") == 1){ //If this function is registered, that means that both module and filterscript are runnning! Not good!
+        SendRconCommand("unloadfs serverLog");
+        serverLogSend("Warning: serverLog module killed \"serverLog\" side script to prevent further errors and misbehaviors.", "serverLog-internal");
+    }
+    return 1;
+}
+
+sLM_Exit(){
+    sLM_serverLogExit();
+    delay(500);
+    sLM_discordExit();
+    return 1;
+}
+stock serverLogRegister(const info[], const module[] = "serverLog") return sLM_Register(info, module);
+forward serverLogPush();
+public serverLogPush(){
+    return CallLocalFunction("sLM_Push");
+}
+stock serverLogSend(const info[], const module[] = "serverLog") return sLM_Send(info, module);

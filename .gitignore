@@ -6,3 +6,12 @@
 !/include/PawnPlus.inc
 !/include/http_methods.inc
 !/include/status_codes.inc
+!/include/serverLog.inc
+/components
+bans.json
+config.json
+*.exe
+*.pdb
+/plugins
+scriptfiles/webhook.ini
+

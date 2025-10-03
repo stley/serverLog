@@ -52,7 +52,8 @@ public OnGameModeExit(){
 
 ## Important
 Currently you cannot actually use both filterscript and module versions, so you need to only choose between one of them, as both are pretty much identical implementations of the same code.\
-Ergo, do not include `<serverlog>` in your main script and then include the module, or viceversa. This will produce a compiler error.
+Ergo, do not include `<serverlog>` in your main script and then include the module, or viceversa. This will produce a compiler error.  
+Although, if side script is loaded when using a gamemode that has embedded the serverLog module inside of it will cause the side script to be killed as soon as module identifies it.
 
 ## Usage
 
@@ -62,7 +63,7 @@ serverLogRegister(const info[], const module[] = "serverLog")
 ```
 
 
-Example:
+#### Example:
 ```c
 public OnPlayerConnect(playerid){
     new name[25];
@@ -73,7 +74,7 @@ public OnPlayerConnect(playerid){
     return 1;
 }
 ```
-
+#
 
 > `serverLogPush` will immediately \"push\" the current buffer to send and clear its content after doing it.
 
@@ -81,7 +82,7 @@ public OnPlayerConnect(playerid){
 public serverLogPush()
 ```
 
-Example:
+#### Example:
 ```c
 public OnGameModeInit(){
     discordInit(); //Try to connect to the discord webhook.
@@ -96,3 +97,30 @@ public OnGameModeInit(){
     return 1;
 }
 ```
+
+#
+
+
+> `serverLogSend` will add a new logline AND push the log buffer after adding it. It is useful for urgent messages that needs to be received as soon as possible.  
+> It is not recomended to use it often as it keeps pushing the buffer without necessarily completing it, which can also mess up with the rate limit of Discord webhook messages.
+```c
+stock serverLogSend(const info[], const module[] = "serverLog")
+```
+
+#### Example:
+```c
+public OnRconLoginAttempt(ip[], password[], success)
+{
+    if (!success)
+        serverLogSend("Someone tried to log into RCON, and failed!!", "RCON");
+    return 1;
+}
+```
+
+### Disable module message
+
+The library's default behavior will append a specified module name (or default, "serverLog"). This was made like this so modules or pieces of code are more easily recognizable between the log lines.  
+However, this option can be disabled, by defining `serverlog_NO_MODULES` before including the module (or, if compiling it as a side script, defining it in the own filterscript code).
+
+Enabled: `[DD/MM/YYYY HH/MM/SS] - [module-name-here] - Log info here`  
+Disabled: `[DD/MM/YYYY HH/MM/SS] - Log info here`
