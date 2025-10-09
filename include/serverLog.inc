@@ -11,7 +11,8 @@ ONLY USE WHEN USING FILTERSCRIPT VERSION OF THE LIBRARY!
 
 
 #if defined __serverLog_as_a_module
-    #error "Do not include <serverLog>, as it collapses with serverLog module definitions!"
+    #warning <serverLog> is already included as a module, i'll just skip this for ya :)
+    #endinput
 #endif
 
 
