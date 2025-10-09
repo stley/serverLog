@@ -1,8 +1,8 @@
 #include <open.mp>
 
 
-//#include <serverLog>
-#include "modules/serverLog/serverLog.p"
+#include <serverLog>
+
 
 forward sL_PushLog();
 public sL_PushLog(){
@@ -18,12 +18,12 @@ public logtest(){
 
 
 public OnGameModeInit(){
-    sLM_Init();
+
     return 1;
 }
 
 public OnGameModeExit(){
-    sLM_Exit();
+
     return 1;
 }
 
