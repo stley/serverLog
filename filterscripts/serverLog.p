@@ -1,8 +1,9 @@
 #define FILTERSCRIPT
 #include <open.mp>
 #include <requests>
+#define PP_SYNTAX_@
 #include <PawnPlus>
-
+#include <filemanager>
 
 
 new
@@ -17,11 +18,13 @@ new
 #pragma option -O2
 
 native Node:JsonString_s(ConstAmxString:value) = JsonString; //PawnPlus implementation of pawn-requests native, supporting PP strings.
+native f_write_s(File: file, ConstAmxString:string) = f_write;
+native file_write_s(const file[], ConstAmxString:text, mode[] = "a") = file_write;
 
-forward slFS_discordInit();
-forward slFS_discordExit();
-forward slFS_serverLogInit();
-forward slFS_serverLogExit();
+forward sLFS_discordInit();
+forward sLFS_discordExit();
+forward sLFS_serverLogInit();
+forward sLFS_serverLogExit();
 forward sLFS_discordSendMessage(ConstStringTag:message);
 forward sLFS_discordOnSendMessage(Requests:id, E_HTTP_STATUS:status, Node:node);
 forward sLFS_Register(const info[], const module[]);
@@ -55,7 +58,7 @@ sLFS_discordTimeOut(){
 }
 
 
-public slFS_discordInit(){
+public sLFS_discordInit(){
     new File:filehandle = fopen("webhook.ini", io_read);
     if(filehandle){
         fread(filehandle, slFS_webhook_url);
@@ -90,7 +93,7 @@ public slFS_discordInit(){
     return 1;
 }
 
-public slFS_discordExit(){
+public sLFS_discordExit(){
     new
         hour, minute, second,
         day, month, year
@@ -124,39 +127,26 @@ public sLFS_discordOnSendMessage(Requests:id, E_HTTP_STATUS:status, Node:node){
     return 1;
 }
 
+new dir:sLFS_dir;
 
-
-slFS_serverLogInit(){
-    new
-        hour, minute, second,
-        day, month, year
-    ;
-    getdate(year, month, day);
-    gettime(hour, minute, second);
-    sLFS_discordSendMessage(str_format("**[%02d/%02d/%04d %02d:%02d:%02d]** - ***stley/serverLog*** side script started!", day, month, year, hour, minute, second));
+sLFS_serverLogInit(){
+    if(!dir_exists("./scriptfiles/serverLog/"))
+        dir_create("./scriptfiles/serverLog/");
+    sLFS_dir = dir_open("./scriptfiles/serverLog/");
+    sLFS_Send("***stley/serverLog*** side script started!", "sLFS-internal");
     print("\n\nstley/serverLog side script started.\n\n");
     return 1;
 }
-slFS_serverLogExit(){
-    if(str_valid(sLFS_Buffer)){
-        if(str_len(sLFS_Buffer) && slFS_isRClientOnline){
-            sLFS_discordSendMessage(sLFS_Buffer);
-        }
-        str_release(sLFS_Buffer);
+sLFS_serverLogExit(){
+    if(slFS_isRClientOnline){
+        sLFS_Send("***stley/serverLog*** side script stopping...", "sLFS-internal");
     }
     delay(500);
-    if(slFS_isRClientOnline){
-        new
-        hour, minute, second,
-        day, month, year
-        ;
-        getdate(year, month, day);
-        gettime(hour, minute, second);
-        sLFS_discordSendMessage(str_format("**[%02d/%02d/%04d %02d:%02d:%02d]** - ***stley/serverLog*** side script stopping...", day, month, year, hour, minute, second));
-    }
+    dir_close(sLFS_dir);
     print("\n\nstley/serverLog side script stopping.\n\n");
     return 1;
 }
+
 
 
 public sLFS_Register(const info[], const module[])
@@ -192,8 +182,37 @@ public sLFS_Register(const info[], const module[])
     }
     if (sLFS_BufferLines > 0) str_append_format(sLFS_Buffer, "\n");
     str_append(sLFS_Buffer, str_convert(logline, "ansi", "utf8"));
+    if(!file_exists("./scriptfiles/serverLog/serverLog.log")){
+        file_create("./scriptfiles/serverLog/serverLog.log");
+        file_write_s("./scriptfiles/serverLog/serverLog.log", str_convert(logline, "ansi", "utf8"));
+    }
+    else{
+        file_write_s("./scriptfiles/serverLog/serverLog.log", @("\n"));
+        file_write_s("./scriptfiles/serverLog/serverLog.log", str_convert(logline, "ansi", "utf8"));
+    }
+    #if !defined serverLog_NO_MODULES
+        new str_dir[64];
+        format(str_dir, sizeof(str_dir), "./scriptfiles/serverLog/%s/", module);
+        if(!dir_exists(str_dir)){
+            dir_create(str_dir);
+            format(str_dir, sizeof(str_dir), "./scriptfiles/serverLog/%s/%s.log", module, module);
+            file_create(str_dir);
+            file_write_s(str_dir, str_convert(logline, "ansi", "utf8"));
+        }
+        else{
+            format(str_dir, sizeof(str_dir), "./scriptfiles/serverLog/%s/%s.log", module, module);
+            if(!file_exists(str_dir))
+                file_create(str_dir);
+            file_write_s(str_dir, @("\n"));
+            file_write_s(str_dir, str_convert(logline, "ansi", "utf8"));
+        }
+    #endif
     sLFS_BufferLines++;
-    printf("[%s] - %s", module, info);
+    #if !defined serverLog_NO_MODULES
+        printf("[%s] - %s", module, info);
+    #else
+        printf(info);
+    #endif
     return 1;
 }
 
@@ -215,15 +234,15 @@ public sLFS_Send(const info[], const module[]){
 
 
 public OnFilterScriptInit(){
-    slFS_discordInit(); //Try to connect to the discord webhook.
+    sLFS_discordInit(); //Try to connect to the discord webhook.
     delay(1000);
-    slFS_serverLogInit();
+    sLFS_serverLogInit();
     return 1;
 }
 
 public OnFilterScriptExit(){
-    slFS_serverLogExit();
+    sLFS_serverLogExit();
     delay(1000);
-    slFS_discordExit();
+    sLFS_discordExit();
     return 1;
 }

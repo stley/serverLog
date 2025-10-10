@@ -1,7 +1,7 @@
 #include <open.mp>
+#include <filemanager>
 
-
-
+//#define serverLog_NO_MODULES
 #include "modules/serverLog/serverLog.p"
 
 forward sL_PushLog();

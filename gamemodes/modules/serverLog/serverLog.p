@@ -1,5 +1,7 @@
 
+
 #if !defined _PawnPlus_included
+    #define PP_SYNTAX_@
     #include <PawnPlus>
 #endif
 #if !defined _requests_included
@@ -15,8 +17,9 @@
     #error "Do not include <serverLog>, as it collapses with serverLog module definitions!"
 #endif
 
-
 native Node:JsonString_s(ConstAmxString:value) = JsonString; //PawnPlus implementation of pawn-requests native, supporting PP strings.
+native f_write_s(File: file, ConstAmxString:string) = f_write;
+native file_write_s(const file[], ConstAmxString:text, mode[] = "a") = file_write;
 
 forward sLM_discordInit();
 forward sLM_discordExit();
@@ -134,37 +137,22 @@ public sLM_discordOnSendMessage(Requests:id, E_HTTP_STATUS:status, Node:node){
     return 1;
 }
 
+new dir:sLM_dir;
 
 sLM_serverLogInit(){
-    new
-        hour, minute, second,
-        day, month, year
-    ;
-    getdate(year, month, day);
-    gettime(hour, minute, second);
-
-    sLM_discordSendMessage(str_format("**[%02d/%02d/%04d %02d:%02d:%02d]** - ***stley/serverLog*** module started!", day, month, year, hour, minute, second));  
+    if(!dir_exists("./scriptfiles/serverLog/"))
+        dir_create("./scriptfiles/serverLog/");
+    sLM_dir = dir_open("./scriptfiles/serverLog/");
+    serverLogSend("***stley/serverLog*** module started!", "sLM-internal");
     print("\n\nstley/serverLog module started.\n\n");
     return 1;
 }
 sLM_serverLogExit(){
-    if(str_valid(sLM_Buffer)){
-        if(str_len(sLM_Buffer) && sLM_isRClientOnline){
-            sLM_discordSendMessage(sLM_Buffer);
-        }
-        str_release(sLM_Buffer);
-    }
-    delay(500);
-    if(sLM_isRClientOnline){
-        new
-        hour, minute, second,
-        day, month, year
-        ;
-        getdate(year, month, day);
-        gettime(hour, minute, second);
-        sLM_discordSendMessage(str_format("**[%02d/%02d/%04d %02d:%02d:%02d]** - ***stley/serverLog*** module stopping...", day, month, year, hour, minute, second));
-    }
+    if(sLM_isRClientOnline)
+        sLM_Send("***stley/serverLog*** module stopping...", "sLM-internal");
     print("\n\nstley/serverLog module stopping.\n\n");
+    delay(500);
+    dir_close(sLM_dir);
     return 1;
 }
 
@@ -188,7 +176,7 @@ sLM_Register(const info[], const module[])
             str_format("**[%02d/%02d/%04d %02d:%02d:%02d]** - ", day, month, year, hour, minute, second),
             str_new(info)
         );  
-    #else  
+    #else
         new String:logline = str_cat(
             str_format("**[%02d/%02d/%04d %02d:%02d:%02d]** - [***%s***] ", day, month, year, hour, minute, second, module),
             str_new(info)
@@ -202,8 +190,37 @@ sLM_Register(const info[], const module[])
     }
     if (sLM_BufferLines > 0) str_append_format(sLM_Buffer, "\n");
     str_append(sLM_Buffer, str_convert(logline, "ansi", "utf8"));
+    if(!file_exists("./scriptfiles/serverLog/serverLog.log")){
+        file_create("./scriptfiles/serverLog/serverLog.log");
+        file_write_s("./scriptfiles/serverLog/serverLog.log", str_convert(logline, "ansi", "utf8"));
+    }
+    else{
+        file_write_s("./scriptfiles/serverLog/serverLog.log", @("\n"));
+        file_write_s("./scriptfiles/serverLog/serverLog.log", str_convert(logline, "ansi", "utf8"));
+    }
+    #if !defined serverLog_NO_MODULES
+        new str_dir[64];
+        format(str_dir, sizeof(str_dir), "./scriptfiles/serverLog/%s/", module);
+        if(!dir_exists(str_dir)){
+            dir_create(str_dir);
+            format(str_dir, sizeof(str_dir), "./scriptfiles/serverLog/%s/%s.log", module, module);
+            file_create(str_dir);
+            file_write_s(str_dir, str_convert(logline, "ansi", "utf8"));
+        }
+        else{
+            format(str_dir, sizeof(str_dir), "./scriptfiles/serverLog/%s/%s.log", module, module);
+            if(!file_exists(str_dir))
+                file_create(str_dir);
+            file_write_s(str_dir, @("\n"));
+            file_write_s(str_dir, str_convert(logline, "ansi", "utf8"));
+        }
+    #endif
     sLM_BufferLines++;
-    printf("[%s] - %s", module, info);
+    #if !defined serverLog_NO_MODULES
+        printf("[%s] - %s", module, info);
+    #else
+        printf(info);
+    #endif
     return 1;
 }
 
@@ -226,13 +243,14 @@ stock sLM_Send(const info[], const module[]){
 }
 
 
+
 sLM_Init(){
     sLM_discordInit();
     delay(500);
     sLM_serverLogInit();
     if(CallRemoteFunction("sLFS_Ping") == 1){ //If this function is registered, that means that both module and filterscript are runnning! Not good!
         SendRconCommand("unloadfs serverLog");
-        serverLogSend("Warning: serverLog module killed \"serverLog\" side script to prevent further errors and misbehaviors.", "serverLog-internal");
+        serverLogSend("Warning: serverLog module killed \"serverLog\" side script to prevent further errors and misbehaviors.", "sLM-internal");
     }
     return 1;
 }

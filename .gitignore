@@ -16,3 +16,5 @@ config.json
 scriptfiles/webhook.ini
 
 log.txt
+log.txt
+/scriptfiles/serverLog

@@ -11,7 +11,7 @@ public sL_PushLog(){
 
 forward logtest();
 public logtest(){
-    serverLogRegister("Hello, from main!");
+    serverLogRegister("Hello, from main!", "main2");
     serverLogRegister("Hello again, from main!", "main");
     if(random(5) == random(5)) serverLogSend("Hello from main, but this is urgent, so I force pushed the buffer!", "urgent");
 }
