@@ -1,12 +1,13 @@
 # serverLog
 
-This library aims to provide a easy way to setup a Discord webhook in order to register logs of relevant information regarding your open.mp gamemode.\
-It takes advantage of both PawnPlus and pawn-requests plugins to do so.\
-Also, this library can be either embedded into your gamemode (as a module) or ran as a side script in your open.mp server.
+This library aims to provide a easy way to setup a logging system for your server, using both local server root logfiles (through FileManager) and a Discord webhook (using pawn-requests), in order to register logs of relevant information regarding your open.mp gamemode.\
+It takes advantage of PawnPlus, pawn-requests, and FileManager plugins to do so.\
+This library can be either embedded into your gamemode (as a module) or ran as a side script in your open.mp server.
 
 ### Requirements
 [PawnPlus v.1.5.1](https://github.com/IS4Code/PawnPlus/releases/tag/v1.5.1)\
 [pawn-requests v0.10.0](https://github.com/Southclaws/pawn-requests/releases/tag/0.10.0)
+[SA-MP-FileManager v 1.5 - Final Release](https://github.com/JaTochNietDan/SA-MP-FileManager/releases/tag/1.5.1)
 
 
 ### Installation: As a side script
@@ -115,7 +116,7 @@ public OnRconLoginAttempt(ip[], password[], success)
 
 ### Disable module message
 
-The library's default behavior will append a specified module name (or default, "serverLog"). This was made like this so modules or pieces of code are more easily recognizable between the log lines.  
+The library's default behavior will append a specified module name (or default, "serverLog"). This was made like this so modules or pieces of logs are more easily recognizable between the global log lines.  
 However, this option can be disabled, by defining `serverlog_NO_MODULES` before including the module (or, if compiling it as a side script, defining it in the own filterscript code).
 
 Enabled: `[DD/MM/YYYY HH/MM/SS] - [module-name-here] - Log info here`  
